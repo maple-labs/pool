@@ -7,8 +7,8 @@ import { IERC20 }   from "../../../../../lib/openzeppelin-contracts/contracts/to
 
 import { IERC20Details } from "../../../../external-interfaces/IERC20Details.sol";
 
-import { IPool }        from "../../../pool/v1/interfaces/IPool.sol";
-import { IStakeLocker } from "../../../stake-locker/v1/interfaces/IStakeLocker.sol";
+import { IPool }        from "../../../pool/contracts/interfaces/IPool.sol";
+import { IStakeLocker } from "../../../stake-locker/contracts/interfaces/IStakeLocker.sol";
 
 import { TestUtil } from "../../../../test/TestUtil.sol";
 

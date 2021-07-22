@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import { IERC20 } from "../../../../../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
-import { IPool } from "../../../pool/v1/interfaces/IPool.sol";
+import { IPool } from "../../../pool/contracts/interfaces/IPool.sol";
 
 import { TestUtil } from "../../../../test/TestUtil.sol";
 import { LP }       from "../../../../test/user/LP.sol";

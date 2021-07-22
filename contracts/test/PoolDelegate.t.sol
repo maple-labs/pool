@@ -6,7 +6,7 @@ import { IERC20 } from "../../../../../lib/openzeppelin-contracts/contracts/toke
 
 import { IERC20Details } from "../../../../external-interfaces/IERC20Details.sol";
 
-import { DebtLocker } from "../../../debt-locker/v1/DebtLocker.sol";
+import { DebtLocker } from "../../../debt-locker/contracts/DebtLocker.sol";
 
 import { TestUtil } from "../../../../test/TestUtil.sol";
 import { Governor } from "../../../../test/user/Governor.sol";

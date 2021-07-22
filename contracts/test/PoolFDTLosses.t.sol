@@ -4,9 +4,9 @@ pragma experimental ABIEncoderV2;
 
 import { SafeMath } from "../../../../../lib/openzeppelin-contracts/contracts/math/SafeMath.sol";
 
-import { PoolLib } from "../../../../libraries/pool/v1/PoolLib.sol";
+import { PoolLib } from "../libraries/PoolLib.sol";
 
-import { Loan } from "../../../loan/v1/Loan.sol";
+import { Loan } from "../../../loan/contracts/Loan.sol";
 
 import { TestUtil } from "../../../../test/TestUtil.sol";
 
