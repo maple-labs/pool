@@ -3,16 +3,17 @@ pragma solidity 0.6.11;
 
 import { ERC20 }             from "../modules/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import { IERC20, SafeERC20 } from "../modules/openzeppelin-contracts/contracts/token/ERC20/SafeERC20.sol";
+import { IBasicFDT }         from "../modules/funds-distribution-token/contracts/interfaces/IBasicFDT.sol";
 
 import { PoolLib } from "./libraries/PoolLib.sol";
 
-import { IDebtLocker }             from "../../debt-locker/contracts/interfaces/IDebtLocker.sol";
-import { IBasicFDT }               from "../../funds-distribution-token/contracts/interfaces/IBasicFDT.sol";
-import { IMapleGlobals }           from "../../globals/contracts/interfaces/IMapleGlobals.sol";
-import { ILiquidityLocker }        from "../../liquidity-locker/contracts/interfaces/ILiquidityLocker.sol";
-import { ILiquidityLockerFactory } from "../../liquidity-locker/contracts/interfaces/ILiquidityLockerFactory.sol";
-import { IStakeLocker }            from "../../stake-locker/contracts/interfaces/IStakeLocker.sol";
-import { IStakeLockerFactory }     from "../../stake-locker/contracts/interfaces/IStakeLockerFactory.sol";
+import { 
+    IDebtLockerLike, 
+    ILiquidityLockerLike, 
+    ILockerFactoryLike, 
+    IMapleGlobals as IMapleGlobalsLike,  // NOTE: Necessary for https://github.com/ethereum/solidity/issues/9278
+    IStakeLockerLike 
+} from "./interfaces/Interfaces.sol";
 
 import { IPool }        from "./interfaces/IPool.sol";
 import { IPoolFactory } from "./interfaces/IPoolFactory.sol";
@@ -106,8 +107,8 @@ contract Pool is IPool, PoolFDT {
         liquidityCap = _liquidityCap;
 
         // Instantiate the LiquidityLocker and the StakeLocker.
-        stakeLocker     = address(IStakeLockerFactory(_slFactory).newLocker(_stakeAsset, _liquidityAsset));
-        liquidityLocker = address(ILiquidityLockerFactory(_llFactory).newLocker(_liquidityAsset));
+        stakeLocker     = address(ILockerFactoryLike(_slFactory).newLocker(_stakeAsset, _liquidityAsset));
+        liquidityLocker = address(ILockerFactoryLike(_llFactory).newLocker(_liquidityAsset));
 
         lockupPeriod = 180 days;
 
@@ -137,13 +138,13 @@ contract Pool is IPool, PoolFDT {
 
     function triggerDefault(address loan, address dlFactory) external override {
         _isValidDelegateAndProtocolNotPaused();
-        IDebtLocker(debtLockers[loan][dlFactory]).triggerDefault();
+        IDebtLockerLike(debtLockers[loan][dlFactory]).triggerDefault();
     }
 
     function claim(address loan, address dlFactory) external override returns (uint256[7] memory claimInfo) {
         _whenProtocolNotPaused();
         _isValidDelegateOrPoolAdmin();
-        claimInfo = IDebtLocker(debtLockers[loan][dlFactory]).claim();
+        claimInfo = IDebtLockerLike(debtLockers[loan][dlFactory]).claim();
 
         (uint256 poolDelegatePortion, uint256 stakeLockerPortion, uint256 principalClaim, uint256 interestClaim) = PoolLib.calculateClaimAndPortions(claimInfo, delegateFee, stakingFee);
 
@@ -173,7 +174,7 @@ contract Pool is IPool, PoolFDT {
         if (claimInfo[6] > 0) _handleDefault(loan, claimInfo[6]);
 
         // Update funds received for StakeLockerFDTs.
-        IStakeLocker(stakeLocker).updateFundsReceived();
+        IStakeLockerLike(stakeLocker).updateFundsReceived();
 
         // Update funds received for PoolFDTs.
         updateFundsReceived();
@@ -468,8 +469,8 @@ contract Pool is IPool, PoolFDT {
     /**
         @dev Returns the MapleGlobals instance.
      */
-    function _globals(address poolFactory) internal view returns (IMapleGlobals) {
-        return IMapleGlobals(IPoolFactory(poolFactory).globals());
+    function _globals(address poolFactory) internal view returns (IMapleGlobalsLike) {
+        return IMapleGlobalsLike(IPoolFactory(poolFactory).globals());
     }
 
     /**
@@ -512,7 +513,7 @@ contract Pool is IPool, PoolFDT {
     }
 
     function _transferLiquidityLockerFunds(address to, uint256 value) internal {
-        ILiquidityLocker(liquidityLocker).transfer(to, value);
+        ILiquidityLockerLike(liquidityLocker).transfer(to, value);
     }
 
 }
