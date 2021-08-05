@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity 0.6.11;
 
-import { Pausable } from "../../../../lib/openzeppelin-contracts/contracts/utils/Pausable.sol";
+import { Pausable } from "../modules/openzeppelin-contracts/contracts/utils/Pausable.sol";
 
 import { IMapleGlobals } from "../../globals/contracts/interfaces/IMapleGlobals.sol";
 
