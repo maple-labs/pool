@@ -12,7 +12,7 @@ interface IDebtLockerLike {
 
 interface ILiquidityLockerLike {
     function fundLoan(address loan, address debtLocker, uint256 amount) external;
-    function transfer(address, uint256) external;  // TODO: CHeck if used
+    function transfer(address, uint256) external;
 }
 
 interface ILockerFactoryLike {
