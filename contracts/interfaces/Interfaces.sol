@@ -5,10 +5,6 @@ interface IERC20DetailsLike {
     function decimals() external view returns (uint256);
 }
 
-interface ICollateralLockerLike {
-    function pull(address, uint256) external;
-}
-
 interface IDebtLockerLike {
     function claim() external returns (uint256[7] memory);
     function triggerDefault() external;
@@ -17,10 +13,6 @@ interface IDebtLockerLike {
 interface ILiquidityLockerLike {
     function fundLoan(address loan, address debtLocker, uint256 amount) external;
     function transfer(address, uint256) external;  // TODO: CHeck if used
-}
-
-interface ILateFeeCalcLike {
-    function getLateFee(uint256) external view returns (uint256);
 }
 
 interface ILockerFactoryLike {
@@ -45,14 +37,6 @@ interface IMapleGlobals {
     function mpl() external view returns (address);
     function protocolPaused() external view returns (bool);
     function swapOutRequired() external view returns (uint256);
-}
-
-interface IPoolLike {
-    function superFactory() external view returns (address);
-}
-
-interface IPoolFactoryLike {
-    function isPool(address) external view returns (bool);
 }
 
 interface IBPoolLike {
