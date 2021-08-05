@@ -8,6 +8,13 @@ import { IPoolFactory } from "./interfaces/IPoolFactory.sol";
 
 import { Pool } from "./Pool.sol";
 
+interface IMapleGlobalsLike {
+    function governor() external view returns (address);
+    function isValidPoolDelegate(address) external view returns (bool);
+    function isValidSubFactory(address, address, uint8) external view returns (bool);
+    function protocolPaused() external view returns (bool);
+}
+
 /// @title PoolFactory instantiates Pools.
 contract PoolFactory is IPoolFactory, Pausable {
 
