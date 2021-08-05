@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity 0.6.11;
 
+import { IBasicFDT }         from "../modules/funds-distribution-token/contracts/interfaces/IBasicFDT.sol";
 import { ERC20 }             from "../modules/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import { IERC20, SafeERC20 } from "../modules/openzeppelin-contracts/contracts/token/ERC20/SafeERC20.sol";
-import { IBasicFDT }         from "../modules/funds-distribution-token/contracts/interfaces/IBasicFDT.sol";
 
 import { PoolLib } from "./libraries/PoolLib.sol";
 
