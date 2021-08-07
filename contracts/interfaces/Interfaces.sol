@@ -37,6 +37,7 @@ interface IMapleGlobals {
     function mpl() external view returns (address);
     function protocolPaused() external view returns (bool);
     function swapOutRequired() external view returns (uint256);
+    function isValidPoolDelegate(address) external view returns (bool);
 }
 
 interface IBPoolLike {
