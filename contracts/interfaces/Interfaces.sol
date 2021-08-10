@@ -54,7 +54,7 @@ interface IBPoolLike {
     function isBound(address) external view returns (bool);
     function isFinalized() external view returns (bool);
     function totalSupply() external view returns (uint256);
-    function transfer(address, uint256) external;
+    function transfer(address, uint256) external returns (bool);
 }
 
 interface ILoanLike {
