@@ -1,0 +1,14 @@
+name: pool
+version: 1.0.0
+source: contracts
+packages:
+  - path: contracts/PoolFactory.sol
+    contractName: PoolFactory
+    customChecksum: 0xa08093e7c8714b9998df8e3a8730b8f145a1e98e6146f29c43cd898758950f5d
+  - path: contracts/Pool.sol
+    contractName: Pool
+    customChecksum: 0x409d28fc7d37a098fbba3a9811c38ce795d3e1c3c5ef08d5b42c2fd0962fba10
+  - path: contracts/libraries/PoolLib.sol
+    contractName: PoolLib
+    customChecksum: 0x6c35c365ffab791a3a1c3c3191ff1e8e6c3cd2035b9d62964e8ed954e0f5de11
+customDescription: Pool Artifacts and ABIs
