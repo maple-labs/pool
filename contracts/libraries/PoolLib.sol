@@ -1,18 +1,19 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity 0.6.11;
 
-import { SafeMath }          from "../../../../../lib/openzeppelin-contracts/contracts/math/SafeMath.sol";
-import { IERC20, SafeERC20 } from "../../../../../lib/openzeppelin-contracts/contracts/token/ERC20/SafeERC20.sol";
+import { SafeMath }          from "../../modules/openzeppelin-contracts/contracts/math/SafeMath.sol";
+import { IERC20, SafeERC20 } from "../../modules/openzeppelin-contracts/contracts/token/ERC20/SafeERC20.sol";
 
-import { IBPool }        from "../../../../external-interfaces/IBPool.sol";
-import { IERC20Details } from "../../../../external-interfaces/IERC20Details.sol";
-
-import { IDebtLockerFactory } from "../../../../core/debt-locker/contracts/interfaces/IDebtLockerFactory.sol";
-import { IMapleGlobals }      from "../../../../core/globals/contracts/interfaces/IMapleGlobals.sol";
-import { ILoan }              from "../../../../core/loan/contracts/interfaces/ILoan.sol";
-import { ILoanFactory }       from "../../../../core/loan/contracts/interfaces/ILoanFactory.sol";
-import { ILiquidityLocker }   from "../../../../core/liquidity-locker/contracts/interfaces/ILiquidityLocker.sol";
-import { IStakeLocker }       from "../../../../core/stake-locker/contracts/interfaces/IStakeLocker.sol";
+import { 
+    IBPoolLike,
+    IERC20DetailsLike,
+    ILiquidityLockerLike,
+    ILoanLike,
+    ILoanFactoryLike,
+    ILockerFactoryLike,
+    IMapleGlobals as IMapleGlobalsLike,  // NOTE: Necessary for https://github.com/ethereum/solidity/issues/9278
+    IStakeLockerLike 
+} from "../interfaces/Interfaces.sol";
 
 /// @title PoolLib is a library of utility functions used by Pool.
 library PoolLib {
@@ -40,13 +41,13 @@ library PoolLib {
         @param delegateFee    The fee that the Pool Delegate earns on interest, in basis points.
      */
     function poolSanityChecks(
-        IMapleGlobals globals,
+        IMapleGlobalsLike globals,
         address liquidityAsset,
         address stakeAsset,
         uint256 stakingFee,
         uint256 delegateFee
     ) external view {
-        IBPool bPool = IBPool(stakeAsset);
+        IBPoolLike bPool = IBPoolLike(stakeAsset);
 
         require(globals.isValidLiquidityAsset(liquidityAsset), "P:INVALID_LIQ_ASSET");
         require(stakingFee.add(delegateFee) <= 10_000,         "P:INVALID_FEES");
@@ -77,24 +78,24 @@ library PoolLib {
         address dlFactory,
         uint256 amt
     ) external {
-        IMapleGlobals globals = IMapleGlobals(ILoanFactory(superFactory).globals());
-        address loanFactory   = ILoan(loan).superFactory();
+        IMapleGlobalsLike globals = IMapleGlobalsLike(ILoanFactoryLike(superFactory).globals());
+        address loanFactory       = ILoanLike(loan).superFactory();
 
         // Auth checks.
         require(globals.isValidLoanFactory(loanFactory),                        "P:INVALID_LF");
-        require(ILoanFactory(loanFactory).isLoan(loan),                         "P:INVALID_L");
+        require(ILoanFactoryLike(loanFactory).isLoan(loan),                         "P:INVALID_L");
         require(globals.isValidSubFactory(superFactory, dlFactory, DL_FACTORY), "P:INVALID_DLF");
 
         address debtLocker = debtLockers[loan][dlFactory];
 
         // Instantiate DebtLocker if it doesn't exist withing this factory
         if (debtLocker == address(0)) {
-            debtLocker = IDebtLockerFactory(dlFactory).newLocker(loan);
+            debtLocker = ILockerFactoryLike(dlFactory).newLocker(loan);
             debtLockers[loan][dlFactory] = debtLocker;
         }
 
         // Fund the Loan.
-        ILiquidityLocker(liquidityLocker).fundLoan(loan, debtLocker, amt);
+        ILiquidityLockerLike(liquidityLocker).fundLoan(loan, debtLocker, amt);
 
         emit LoanFunded(loan, debtLocker, amt);
     }
@@ -123,13 +124,13 @@ library PoolLib {
         )
     {
 
-        IBPool bPool = IBPool(stakeAsset);  // stakeAsset = Balancer Pool Tokens
+        IBPoolLike bPool = IBPoolLike(stakeAsset);  // stakeAsset = Balancer Pool Tokens
 
         // Check amount of Liquidity Asset coverage that exists in the StakeLocker.
         uint256 availableSwapOut = getSwapOutValueLocker(stakeAsset, address(liquidityAsset), stakeLocker);
 
         // Pull BPTs from StakeLocker.
-        IStakeLocker(stakeLocker).pull(address(this), bPool.balanceOf(stakeLocker));
+        IStakeLockerLike(stakeLocker).pull(address(this), bPool.balanceOf(stakeLocker));
 
         // To maintain accounting, account for direct transfers into Pool.
         uint256 preBurnLiquidityAssetBal = liquidityAsset.balanceOf(address(this));
@@ -147,7 +148,7 @@ library PoolLib {
         bptsBurned     = preBurnBptBal.sub(postBurnBptBal);
         bPool.transfer(stakeLocker, postBurnBptBal);
         liquidityAssetRecoveredFromBurn = liquidityAsset.balanceOf(address(this)).sub(preBurnLiquidityAssetBal);
-        IStakeLocker(stakeLocker).updateLosses(bptsBurned);  // Update StakeLockerFDT loss accounting for BPTs
+        IStakeLockerLike(stakeLocker).updateLosses(bptsBurned);  // Update StakeLockerFDT loss accounting for BPTs
     }
 
     /**
@@ -193,7 +194,7 @@ library PoolLib {
         @param principalOut   The amount of funds that are already funded to Loans.
         @param liquidityAsset The Liquidity Asset of the Pool.
      */
-    function validateDeactivation(IMapleGlobals globals, uint256 principalOut, address liquidityAsset) external view {
+    function validateDeactivation(IMapleGlobalsLike globals, uint256 principalOut, address liquidityAsset) external view {
         require(principalOut <= _convertFromUsd(globals, liquidityAsset, 100), "P:PRINCIPAL_OUTSTANDING");
     }
 
@@ -259,7 +260,7 @@ library PoolLib {
         @param liquidityAsset The address of Liquidity Asset that is supported by the Pool.
         @param globals        The instance of a MapleGlobals.
      */
-    function reclaimERC20(address token, address liquidityAsset, IMapleGlobals globals) external {
+    function reclaimERC20(address token, address liquidityAsset, IMapleGlobalsLike globals) external {
         require(msg.sender == globals.governor(), "P:NOT_GOV");
         require(token != liquidityAsset && token != address(0), "P:INVALID_TOKEN");
         IERC20(token).safeTransfer(msg.sender, IERC20(token).balanceOf(address(this)));
@@ -297,7 +298,7 @@ library PoolLib {
         address staker,
         address stakeLocker
     ) external view returns (uint256) {
-        IBPool bPool = IBPool(_bPool);
+        IBPoolLike bPool = IBPoolLike(_bPool);
 
         // StakeLockerFDTs are minted 1:1 (in wei) in the StakeLocker when staking BPTs, thus representing stake amount.
         // These are burned when withdrawing staked BPTs, thus representing the current stake amount.
@@ -339,7 +340,7 @@ library PoolLib {
         address liquidityAsset,
         address stakeLocker
     ) public view returns (uint256) {
-        return _getSwapOutValue(_bPool, liquidityAsset, IBPool(_bPool).balanceOf(stakeLocker));
+        return _getSwapOutValue(_bPool, liquidityAsset, IBPoolLike(_bPool).balanceOf(stakeLocker));
     }
 
     function _getSwapOutValue(
@@ -348,7 +349,7 @@ library PoolLib {
         uint256 poolAmountIn
     ) internal view returns (uint256) {
         // Fetch Balancer pool token information
-        IBPool bPool            = IBPool(_bPool);
+        IBPoolLike bPool        = IBPoolLike(_bPool);
         uint256 tokenBalanceOut = bPool.getBalance(liquidityAsset);
         uint256 tokenWeightOut  = bPool.getDenormalizedWeight(liquidityAsset);
         uint256 poolSupply      = bPool.totalSupply();
@@ -391,7 +392,7 @@ library PoolLib {
         uint256 liquidityAssetAmountRequired
     ) public view returns (uint256 poolAmountInRequired, uint256 stakerBalance) {
         // Fetch Balancer pool token information.
-        IBPool bPool = IBPool(_bPool);
+        IBPoolLike bPool = IBPoolLike(_bPool);
 
         uint256 tokenBalanceOut = bPool.getBalance(liquidityAsset);
         uint256 tokenWeightOut  = bPool.getDenormalizedWeight(liquidityAsset);
@@ -426,7 +427,7 @@ library PoolLib {
         @return poolAmountInRequired       The BPTs required for minimum Liquidity Asset coverage.
         @return poolAmountPresent          The current staked BPTs.
      */
-    function getInitialStakeRequirements(IMapleGlobals globals, address balancerPool, address liquidityAsset, address poolDelegate, address stakeLocker) external view returns (
+    function getInitialStakeRequirements(IMapleGlobalsLike globals, address balancerPool, address liquidityAsset, address poolDelegate, address stakeLocker) external view returns (
         uint256 swapOutAmountRequired,
         uint256 currentPoolDelegateCover,
         bool    enoughStakeForFinalization,
@@ -463,10 +464,10 @@ library PoolLib {
         @param  usdAmount      The USD amount to convert, in integer units (e.g., $100 = 100).
         @return The usdAmount worth of Liquidity Asset, in Liquidity Asset units.
     */
-    function _convertFromUsd(IMapleGlobals globals, address liquidityAsset, uint256 usdAmount) internal view returns (uint256) {
+    function _convertFromUsd(IMapleGlobalsLike globals, address liquidityAsset, uint256 usdAmount) internal view returns (uint256) {
         return usdAmount
             .mul(10 ** 8)                                         // Cancel out 10 ** 8 decimals from oracle.
-            .mul(10 ** IERC20Details(liquidityAsset).decimals())  // Convert to Liquidity Asset precision.
+            .mul(10 ** IERC20DetailsLike(liquidityAsset).decimals())  // Convert to Liquidity Asset precision.
             .div(globals.getLatestPrice(liquidityAsset));         // Convert to Liquidity Asset value.
     }
 

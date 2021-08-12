@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity 0.6.11;
 
-import { Pausable } from "../../../../lib/openzeppelin-contracts/contracts/utils/Pausable.sol";
+import { Pausable } from "../modules/openzeppelin-contracts/contracts/utils/Pausable.sol";
 
-import { IMapleGlobals } from "../../globals/contracts/interfaces/IMapleGlobals.sol";
-
+import { IMapleGlobals as IMapleGlobalsLike } from "./interfaces/Interfaces.sol";
 import { IPoolFactory } from "./interfaces/IPoolFactory.sol";
 
 import { Pool } from "./Pool.sol";
@@ -16,19 +15,19 @@ contract PoolFactory is IPoolFactory, Pausable {
     uint8 public override constant SL_FACTORY = 4;
 
     uint256 public override poolsCreated;
-    IMapleGlobals public override globals;
+    address public override globals;
 
     mapping(uint256 => address) public override pools;
     mapping(address => bool)    public override isPool;             // True only if a Pool was instantiated by this factory.
     mapping(address => bool)    public override poolFactoryAdmins;
 
     constructor(address _globals) public {
-        globals = IMapleGlobals(_globals);
+        globals = _globals;
     }
 
     function setGlobals(address newGlobals) external override {
         _isValidGovernor();
-        globals = IMapleGlobals(newGlobals);
+        globals = newGlobals;
     }
 
     function createPool(
@@ -42,7 +41,7 @@ contract PoolFactory is IPoolFactory, Pausable {
     ) external override whenNotPaused returns (address poolAddress) {
         _whenProtocolNotPaused();
         {
-            IMapleGlobals _globals = globals;
+            IMapleGlobalsLike _globals = IMapleGlobalsLike(globals);
             require(_globals.isValidSubFactory(address(this), llFactory, LL_FACTORY), "PF:INVALID_LLF");
             require(_globals.isValidSubFactory(address(this), slFactory, SL_FACTORY), "PF:INVALID_SLF");
             require(_globals.isValidPoolDelegate(msg.sender),                         "PF:NOT_DELEGATE");
@@ -105,21 +104,21 @@ contract PoolFactory is IPoolFactory, Pausable {
         @dev Checks that `msg.sender` is the Governor.
      */
     function _isValidGovernor() internal view {
-        require(msg.sender == globals.governor(), "PF:NOT_GOV");
+        require(msg.sender == IMapleGlobalsLike(globals).governor(), "PF:NOT_GOV");
     }
 
     /**
         @dev Checks that `msg.sender` is the Governor or a PoolFactory Admin.
      */
     function _isValidGovernorOrPoolFactoryAdmin() internal view {
-        require(msg.sender == globals.governor() || poolFactoryAdmins[msg.sender], "PF:NOT_GOV_OR_ADMIN");
+        require(msg.sender == IMapleGlobalsLike(globals).governor() || poolFactoryAdmins[msg.sender], "PF:NOT_GOV_OR_ADMIN");
     }
 
     /**
         @dev Checks that the protocol is not in a paused state.
      */
     function _whenProtocolNotPaused() internal view {
-        require(!globals.protocolPaused(), "PF:PROTO_PAUSED");
+        require(!IMapleGlobalsLike(globals).protocolPaused(), "PF:PROTO_PAUSED");
     }
 
 }

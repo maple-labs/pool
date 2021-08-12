@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity 0.6.11;
 
-import { IMapleGlobals } from "../../../globals/contracts/interfaces/IMapleGlobals.sol";
-
 /// @title PoolFactory instantiates Pools.
 interface IPoolFactory {
 
@@ -59,7 +57,7 @@ interface IPoolFactory {
     /**
         @dev The current MapleGlobals instance.
      */
-    function globals() external view returns (IMapleGlobals);
+    function globals() external view returns (address);
 
     /**
         @param  index An index of a Pool.
