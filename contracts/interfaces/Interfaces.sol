@@ -55,6 +55,7 @@ interface IBPoolLike {
     function isFinalized() external view returns (bool);
     function totalSupply() external view returns (uint256);
     function transfer(address, uint256) external returns (bool);
+    function joinPool(uint poolAmountOut, uint[] calldata maxAmountsIn) external;
 }
 
 interface ILoanLike {
