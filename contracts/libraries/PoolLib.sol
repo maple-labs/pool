@@ -83,7 +83,7 @@ library PoolLib {
 
         // Auth checks.
         require(globals.isValidLoanFactory(loanFactory),                        "P:INVALID_LF");
-        require(ILoanFactoryLike(loanFactory).isLoan(loan),                         "P:INVALID_L");
+        require(ILoanFactoryLike(loanFactory).isLoan(loan),                     "P:INVALID_L");
         require(globals.isValidSubFactory(superFactory, dlFactory, DL_FACTORY), "P:INVALID_DLF");
 
         address debtLocker = debtLockers[loan][dlFactory];

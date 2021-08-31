@@ -29,10 +29,9 @@ contract Pool is IPool, PoolFDT {
 
     uint8 public override constant DL_FACTORY = 1;
 
-    IERC20 public override immutable liquidityAsset;
-
-    address public override immutable poolDelegate;
+    address public override immutable liquidityAsset;
     address public override immutable liquidityLocker;
+    address public override immutable poolDelegate;
     address public override immutable stakeAsset;
     address public override immutable stakeLocker;
     address public override immutable superFactory;
@@ -95,7 +94,7 @@ contract Pool is IPool, PoolFDT {
         PoolLib.poolSanityChecks(_globals(msg.sender), _liquidityAsset, _stakeAsset, _stakingFee, _delegateFee);
 
         // Assign variables relating to the Liquidity Asset.
-        liquidityAsset         = IERC20(_liquidityAsset);
+        liquidityAsset         = _liquidityAsset;
         liquidityAssetDecimals = ERC20(_liquidityAsset).decimals();
 
         // Assign state variables.
@@ -107,8 +106,8 @@ contract Pool is IPool, PoolFDT {
         liquidityCap = _liquidityCap;
 
         // Instantiate the LiquidityLocker and the StakeLocker.
-        stakeLocker     = address(ILockerFactoryLike(_slFactory).newLocker(_stakeAsset, _liquidityAsset));
-        liquidityLocker = address(ILockerFactoryLike(_llFactory).newLocker(_liquidityAsset));
+        stakeLocker     = ILockerFactoryLike(_slFactory).newLocker(_stakeAsset, _liquidityAsset);
+        liquidityLocker = ILockerFactoryLike(_llFactory).newLocker(_liquidityAsset);
 
         lockupPeriod = 180 days;
 
@@ -180,7 +179,7 @@ contract Pool is IPool, PoolFDT {
         updateFundsReceived();
 
         _emitBalanceUpdatedEvent();
-        emit BalanceUpdated(stakeLocker, address(liquidityAsset), liquidityAsset.balanceOf(stakeLocker));
+        emit BalanceUpdated(stakeLocker, liquidityAsset, IERC20(liquidityAsset).balanceOf(stakeLocker));
 
         emit Claim(loan, interestClaim, principalClaim, claimInfo[3], stakeLockerPortion, poolDelegatePortion);
     }
@@ -193,7 +192,7 @@ contract Pool is IPool, PoolFDT {
      */
     function _handleDefault(address loan, uint256 defaultSuffered) internal {
 
-        (uint256 bptsBurned, uint256 postBurnBptBal, uint256 liquidityAssetRecoveredFromBurn) = PoolLib.handleDefault(liquidityAsset, stakeLocker, stakeAsset, defaultSuffered);
+        (uint256 bptsBurned, uint256 postBurnBptBal, uint256 liquidityAssetRecoveredFromBurn) = PoolLib.handleDefault(IERC20(liquidityAsset), stakeLocker, stakeAsset, defaultSuffered);
 
         // If BPT burn is not enough to cover full default amount, pass on losses to LPs with PoolFDT loss accounting.
         if (defaultSuffered > liquidityAssetRecoveredFromBurn) {
@@ -202,7 +201,7 @@ contract Pool is IPool, PoolFDT {
         }
 
         // Transfer Liquidity Asset from burn to LiquidityLocker.
-        liquidityAsset.safeTransfer(liquidityLocker, liquidityAssetRecoveredFromBurn);
+        IERC20(liquidityAsset).safeTransfer(liquidityLocker, liquidityAssetRecoveredFromBurn);
 
         principalOut = principalOut.sub(defaultSuffered);  // Subtract rest of the Loan's principal from `principalOut`.
 
@@ -218,7 +217,7 @@ contract Pool is IPool, PoolFDT {
     function deactivate() external override {
         _isValidDelegateAndProtocolNotPaused();
         _isValidState(State.Finalized);
-        PoolLib.validateDeactivation(_globals(superFactory), principalOut, address(liquidityAsset));
+        PoolLib.validateDeactivation(_globals(superFactory), principalOut, liquidityAsset);
         poolState = State.Deactivated;
         emit PoolStateChanged(poolState);
     }
@@ -280,7 +279,7 @@ contract Pool is IPool, PoolFDT {
         uint256 wad = _toWad(amt);
         PoolLib.updateDepositDate(depositDate, balanceOf(msg.sender), wad, msg.sender);
 
-        liquidityAsset.safeTransferFrom(msg.sender, liquidityLocker, amt);
+        IERC20(liquidityAsset).safeTransferFrom(msg.sender, liquidityLocker, amt);
         _mint(msg.sender, wad);
 
         _emitBalanceUpdatedEvent();
@@ -392,7 +391,7 @@ contract Pool is IPool, PoolFDT {
     /**************************/
 
     function reclaimERC20(address token) external override {
-        PoolLib.reclaimERC20(token, address(liquidityAsset), _globals(superFactory));
+        PoolLib.reclaimERC20(token, liquidityAsset, _globals(superFactory));
     }
 
     /*************************/
@@ -414,7 +413,7 @@ contract Pool is IPool, PoolFDT {
     }
 
     function getInitialStakeRequirements() public override view returns (uint256, uint256, bool, uint256, uint256) {
-        return PoolLib.getInitialStakeRequirements(_globals(superFactory), stakeAsset, address(liquidityAsset), poolDelegate, stakeLocker);
+        return PoolLib.getInitialStakeRequirements(_globals(superFactory), stakeAsset, liquidityAsset, poolDelegate, stakeLocker);
     }
 
     function getPoolSharesRequired(
@@ -448,7 +447,7 @@ contract Pool is IPool, PoolFDT {
         @return The balance of LiquidityLocker.
      */
     function _balanceOfLiquidityLocker() internal view returns (uint256) {
-        return liquidityAsset.balanceOf(liquidityLocker);
+        return IERC20(liquidityAsset).balanceOf(liquidityLocker);
     }
 
     /**
@@ -478,7 +477,7 @@ contract Pool is IPool, PoolFDT {
         @dev It emits a `BalanceUpdated` event. 
      */
     function _emitBalanceUpdatedEvent() internal {
-        emit BalanceUpdated(liquidityLocker, address(liquidityAsset), _balanceOfLiquidityLocker());
+        emit BalanceUpdated(liquidityLocker, liquidityAsset, _balanceOfLiquidityLocker());
     }
 
     /**
@@ -487,7 +486,7 @@ contract Pool is IPool, PoolFDT {
         @param value The amount of liquidity asset that gets transferred.
      */
     function _transferLiquidityAsset(address to, uint256 value) internal {
-        liquidityAsset.safeTransfer(to, value);
+        IERC20(liquidityAsset).safeTransfer(to, value);
     }
 
     /**
