@@ -13,7 +13,7 @@ contract PoolDelegate is PoolAdmin {
     /************************/
 
     function poolFactory_createPool(
-        address pool,
+        address factory,
         address liquidityAsset,
         address stakeAsset,
         address slFactory,
@@ -21,8 +21,10 @@ contract PoolDelegate is PoolAdmin {
         uint256 stakingFee,
         uint256 delegateFee,
         uint256 liquidityCap
-    ) external returns (address) {
-        return IPoolFactory(pool).createPool(
+    )
+        external returns (address)
+    {
+        return IPoolFactory(factory).createPool(
             liquidityAsset,
             stakeAsset,
             slFactory,
@@ -74,7 +76,7 @@ contract PoolDelegate is PoolAdmin {
     /*********************/
 
     function try_poolFactory_createPool(
-        address pool,
+        address factory,
         address liquidityAsset,
         address stakeAsset,
         address slFactory,
@@ -82,8 +84,10 @@ contract PoolDelegate is PoolAdmin {
         uint256 stakingFee,
         uint256 delegateFee,
         uint256 liquidityCap
-    ) external returns (bool ok) {
-        (ok,) = address(pool).call(
+    )
+        external returns (bool ok)
+    {
+        (ok,) = factory.call(
             abi.encodeWithSelector(
                 IPoolFactory.createPool.selector,
                 liquidityAsset,
@@ -97,40 +101,40 @@ contract PoolDelegate is PoolAdmin {
         );
     }
 
-    function try_loan_finalize(address pool) external returns (bool ok) {
-        (ok,) = address(pool).call(abi.encodeWithSelector(IPool.finalize.selector));
+    function try_pool_finalize(address pool) external returns (bool ok) {
+        (ok,) = pool.call(abi.encodeWithSelector(IPool.finalize.selector));
     }
 
-    function try_loan_fundLoan(address pool, address loan, address dlFactory, uint256 amount) external returns (bool ok) {
-        (ok,) = address(pool).call(abi.encodeWithSelector(IPool.fundLoan.selector, loan, dlFactory, amount));
+    function try_pool_fundLoan(address pool, address loan, address dlFactory, uint256 amount) external returns (bool ok) {
+        (ok,) = pool.call(abi.encodeWithSelector(IPool.fundLoan.selector, loan, dlFactory, amount));
     }
 
-    function try_loan_triggerDefault(address pool, address loan, address dlFactory) external returns (bool ok) {
-        (ok,) = address(pool).call(abi.encodeWithSelector(IPool.triggerDefault.selector, loan, dlFactory));
+    function try_pool_triggerDefault(address pool, address loan, address dlFactory) external returns (bool ok) {
+        (ok,) = pool.call(abi.encodeWithSelector(IPool.triggerDefault.selector, loan, dlFactory));
     }
 
-    function try_loan_deactivate(address pool) external returns (bool ok) {
-        (ok,) = address(pool).call(abi.encodeWithSelector(IPool.deactivate.selector));
+    function try_pool_deactivate(address pool) external returns (bool ok) {
+        (ok,) = pool.call(abi.encodeWithSelector(IPool.deactivate.selector));
     }
 
-    function try_loan_setLockupPeriod(address pool, uint256 newLockupPeriod) external returns (bool ok) {
-        (ok,) = address(pool).call(abi.encodeWithSelector(IPool.setLockupPeriod.selector, newLockupPeriod));
+    function try_pool_setLockupPeriod(address pool, uint256 newLockupPeriod) external returns (bool ok) {
+        (ok,) = pool.call(abi.encodeWithSelector(IPool.setLockupPeriod.selector, newLockupPeriod));
     }
 
-    function try_loan_setStakingFee(address pool, uint256 newStakingFee) external returns (bool ok) {
-        (ok,) = address(pool).call(abi.encodeWithSelector(IPool.setStakingFee.selector, newStakingFee));
+    function try_pool_setStakingFee(address pool, uint256 newStakingFee) external returns (bool ok) {
+        (ok,) = pool.call(abi.encodeWithSelector(IPool.setStakingFee.selector, newStakingFee));
     }
 
-    function try_loan_setAllowList(address pool, address account, bool status) external returns (bool ok) {
-        (ok,) = address(pool).call(abi.encodeWithSelector(IPool.setAllowList.selector, account, status));
+    function try_pool_setAllowList(address pool, address account, bool status) external returns (bool ok) {
+        (ok,) = pool.call(abi.encodeWithSelector(IPool.setAllowList.selector, account, status));
     }
 
-    function try_loan_setPoolAdmin(address pool, address poolAdmin, bool allowed) external returns (bool ok) {
-        (ok,) = address(pool).call(abi.encodeWithSelector(IPool.setPoolAdmin.selector, poolAdmin, allowed));
+    function try_pool_setPoolAdmin(address pool, address poolAdmin, bool allowed) external returns (bool ok) {
+        (ok,) = pool.call(abi.encodeWithSelector(IPool.setPoolAdmin.selector, poolAdmin, allowed));
     }
 
-    function try_loan_setOpenToPublic(address pool, bool open) external returns (bool ok) {
-        (ok,) = address(pool).call(abi.encodeWithSelector(IPool.setOpenToPublic.selector, open));
+    function try_pool_setOpenToPublic(address pool, bool open) external returns (bool ok) {
+        (ok,) = pool.call(abi.encodeWithSelector(IPool.setOpenToPublic.selector, open));
     }
 
 }

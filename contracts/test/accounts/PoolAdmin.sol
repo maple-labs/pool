@@ -21,12 +21,12 @@ contract PoolAdmin {
     /*** Try Functions ***/
     /*********************/
 
-    function try_loan_claim(address pool, address loan, address dlFactory) external returns (bool ok) {
-        (ok,) = address(pool).call(abi.encodeWithSelector(IPool.claim.selector, loan, dlFactory));
+    function try_pool_claim(address pool, address loan, address dlFactory) external returns (bool ok) {
+        (ok,) = pool.call(abi.encodeWithSelector(IPool.claim.selector, loan, dlFactory));
     }
 
-    function try_loan_setLiquidityCap(address pool, uint256 newLiquidityCap) external returns (bool ok) {
-        (ok,) = address(pool).call(abi.encodeWithSelector(IPool.setLiquidityCap.selector, newLiquidityCap));
+    function try_pool_setLiquidityCap(address pool, uint256 newLiquidityCap) external returns (bool ok) {
+        (ok,) = pool.call(abi.encodeWithSelector(IPool.setLiquidityCap.selector, newLiquidityCap));
     }
 
 }
