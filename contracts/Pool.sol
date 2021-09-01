@@ -30,8 +30,8 @@ contract Pool is IPool, PoolFDT {
     uint8 public override constant DL_FACTORY = 1;
 
     address public override immutable liquidityAsset;
-    address public override immutable liquidityLocker;
     address public override immutable poolDelegate;
+    address public override immutable liquidityLocker;
     address public override immutable stakeAsset;
     address public override immutable stakeLocker;
     address public override immutable superFactory;
