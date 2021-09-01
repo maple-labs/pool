@@ -466,9 +466,9 @@ library PoolLib {
     */
     function _convertFromUsd(IMapleGlobalsLike globals, address liquidityAsset, uint256 usdAmount) internal view returns (uint256) {
         return usdAmount
-            .mul(10 ** 8)                                         // Cancel out 10 ** 8 decimals from oracle.
+            .mul(10 ** 8)                                             // Cancel out 10 ** 8 decimals from oracle.
             .mul(10 ** IERC20DetailsLike(liquidityAsset).decimals())  // Convert to Liquidity Asset precision.
-            .div(globals.getLatestPrice(liquidityAsset));         // Convert to Liquidity Asset value.
+            .div(globals.getLatestPrice(liquidityAsset));             // Convert to Liquidity Asset value.
     }
 
 }

@@ -20,7 +20,7 @@ contract Governor is PoolFactoryAdmin {
         IPoolFactory(factory).setPoolFactoryAdmin(poolFactoryAdmin, allowed);
     }
 
-    function poolFactory_reclaimERC20(address pool, address token) external {
+    function pool_reclaimERC20(address pool, address token) external {
         IPool(pool).reclaimERC20(token);
     }
 
