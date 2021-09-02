@@ -4,7 +4,7 @@ pragma solidity 0.6.11;
 import { Pausable } from "../modules/openzeppelin-contracts/contracts/utils/Pausable.sol";
 
 import { IMapleGlobals as IMapleGlobalsLike } from "./interfaces/Interfaces.sol";
-import { IPoolFactory } from "./interfaces/IPoolFactory.sol";
+import { IPoolFactory }                       from "./interfaces/IPoolFactory.sol";
 
 import { Pool } from "./Pool.sol";
 

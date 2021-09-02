@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity 0.6.11;
 
-import { IERC20 } from "../../modules/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-
 import { IPoolFDT } from "./IPoolFDT.sol";
 
 /// @title Pool maintains all accounting and functionality related to Pools.
@@ -149,7 +147,7 @@ interface IPool is IPoolFDT {
     /**
         @dev The asset deposited by Lenders into the LiquidityLocker, for funding Loans.
      */
-    function liquidityAsset() external pure returns (IERC20);
+    function liquidityAsset() external pure returns (address);
 
     /**
         @dev The Pool Delegate address, maintains full authority over the Pool.

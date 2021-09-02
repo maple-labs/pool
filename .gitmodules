@@ -4,3 +4,6 @@
 [submodule "modules/funds-distribution-token"]
 	path = modules/funds-distribution-token
 	url = https://github.com/maple-labs/funds-distribution-token
+[submodule "modules/custodial-ownership-token"]
+	path = modules/custodial-ownership-token
+	url = https://github.com/maple-labs/custodial-ownership-token.git
